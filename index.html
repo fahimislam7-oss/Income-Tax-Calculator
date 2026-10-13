@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="hi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Tax Calculator - 2026-27</title>
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1f77b4">
+    <!-- Bootstrap CSS for Mobile & Desktop Friendliness -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background-color: #ffffff; min-height: 100vh; border-right: 2px solid #1f77b4; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        .sidebar-menu { flex-grow: 1; }
+        .sidebar-dev-footer { font-size: 11px; color: #555; background: #f1f3f4; padding: 10px; border-radius: 6px; border-top: 1px solid #dee2e6; margin-top: 20px; text-align: center; line-height: 1.3; }
+        .main-content { padding: 25px; }
+        .dev-banner { background: #f1f3f4; padding: 12px; border-radius: 8px; font-size: 14px; color: #444; text-align: center; margin-bottom: 20px; }
+        .nav-btn { width: 100%; margin-bottom: 10px; text-align: left; font-weight: 600; }
+        .sub-nav-btn { width: 100%; margin-bottom: 8px; text-align: left; font-size: 13px; font-weight: 600; }
+        .card-box { background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #1f77b4; }
+        .section-title { background-color: #1f77b4; color: white; padding: 10px 15px; border-radius: 5px; font-size: 18px; margin-top: 20px; margin-bottom: 15px; }
+        
+        /* Statement & Tax Sheet Styling */
+        .statement-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1f77b4; padding-bottom: 15px; margin-bottom: 15px; }
+        .logo-box { width: 60px; height: 60px; background: #1f77b4; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .salary-table { font-size: 10px; white-space: nowrap; }
+        .salary-table th { background-color: #1f77b4 !important; color: white !important; text-align: center; vertical-align: middle; }
+        .salary-table td { text-align: center; vertical-align: middle; }
+        .tax-calc-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+        .tax-calc-table td { padding: 5px 8px; border-bottom: 1px dashed #ddd; }
+        .top-dev-line { font-size: 11px; color: #666; text-align: center; margin-bottom: 10px; background: #e9ecef; padding: 4px; border-radius: 4px; }
+        
+        /* Split Header and Signature for Print Layout */
+        .print-header-grid { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 6px; }
+        .print-signature { margin-top: 25px; float: right; text-align: right; font-size: 12px; line-height: 1.3; }
+
+        /* General Print Media Setting */
+        @media print {
+            .sidebar, .dev-banner, .no-print, h1.text-center, hr { display: none !important; }
+            .main-content { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .card-box { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Navigation with Fixed Developer Footer -->
+        <div class="col-md-3 col-lg-2 sidebar d-md-block no-print">
+            <div class="sidebar-menu">
+                <h4 class="text-primary mb-4 fw-bold">📌 Menu</h4>
+                <button class="btn btn-outline-primary nav-btn" id="btn-home" onclick="showPage('home')">🏠 Home</button>
+                <button class="btn btn-outline-primary nav-btn" id="btn-fill-form" onclick="showPage('fill-form')">📝 Fill Form</button>
+                <button class="btn btn-outline-primary nav-btn" id="btn-salary-statement" onclick="showPage('salary-statement')">📄 Annual Salary Statement</button>
+                <button class="btn btn-outline-primary nav-btn" id="btn-form-16" onclick="showPage('form-16')">📁 Form 16</button>
+                <button class="btn btn-outline-primary nav-btn" id="btn-new-regime" onclick="showPage('new-regime')">📉 New Regime Tax</button>
+                <button class="btn btn-outline-primary nav-btn" id="btn-old-regime" onclick="showPage('old-regime')">📈 Old Regime Tax</button>
+            </div>
+            <!-- Fixed Sidebar Developer Footer -->
+            <div class="sidebar-dev-footer">
+                <b>Developed By:</b><br>
+                Fahim Islam (A.T.) Math<br>
+                Ghss Timlagoonth, Pati<br>
+                📞 7467860304
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-9 col-lg-10 main-content">
+            <h1 class="text-center text-primary fw-bold">📊 Income Tax Calculator</h1>
+            <div class="dev-banner">
+                <b>Developed By:</b> Fahim Islam (A.T.) Math | <b>School:</b> Ghss Timlagoonth, Pati (Champawat)<br>
+                📞 <b>Mo. No.:</b> 7467860304 | ✉️ <b>Email ID:</b> fahim.islam7@gmail.com
+            </div>
+            <hr class="no-print">
+
+            <!-- Pages Dynamic Content Container -->
+            <div id="page-content">
+                <!-- Content will load dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global Comprehensive Data Store with LocalStorage Integration
+    let defaultTaxData = {
+        name: "फहीम इस्लाम",
+        designation: "Assistant Teacher (LT)",
+        school: "Ghss Timlagoonth, Champawat",
+        whatsapp: "7467860304",
+        pan: "ABCDE1234F",
+        treasuryCode: "CPW01",
+        gpfNpsNo: "123456789012",
+        gender: "Male",
+        state: "Uttarakhand",
+        district: "Champawat",
+        hraType: "B-2",
+        hillAllow: 460,
+        sghs: 650,
+        payScale: "Level 7 (44900-142400) [Grade Pay: GP 4600]",
+        basicMarch: 52000,
+        incrementMonth: "July",
+        incrementAmount: 1600,
+        gis: 200,
+        otherAllow: 0,
+        bonus: 0,
+        daRate: 50,
+        daEffectiveMonth: "July",
+        daRateNew: 53,
+        daArrears: 0,
+        otherArrear: 0,
+        otherIncome: 0,
+        deductionType: "NPS",
+        gpfMonthly: 5000,
+        deductionStartMonth: "March",
+        incomeTaxMonthly: 4000,
+        taxChangeMonth: "None",
+        incomeTaxChangedMonthly: 4000,
+        taxChangeOption: "no change",
+        // Old Regime Deductions
+        ded80C: 150000,
+        ded80CCD1B: 50000,
+        ded80D: 25000,
+        ded80EEA: 0,
+        ded80G: 0,
+        ded80TTA: 10000
+    };
+
+    let storedData = localStorage.getItem('taxCalculatorData_2026_27');
+    let taxData = storedData ? JSON.parse(storedData) : defaultTaxData;
+
+    function updateActiveButton(pageId) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active', 'btn-primary', 'text-white');
+            btn.classList.add('btn-outline-primary');
+        });
+        const activeBtn = document.getElementById('btn-' + pageId);
+        if(activeBtn) {
+            activeBtn.classList.remove('btn-outline-primary');
+            activeBtn.classList.add('active', 'btn-primary', 'text-white');
+        }
+    }
+
+    function saveFormData(event) {
+        event.preventDefault();
+        taxData.name = document.getElementById('empName').value;
+        taxData.designation = document.getElementById('empDesig').value;
+        taxData.school = document.getElementById('empSchool').value;
+        taxData.whatsapp = document.getElementById('empWhatsapp').value;
+        taxData.pan = document.getElementById('empPan').value;
+        taxData.treasuryCode = document.getElementById('empTreasury').value;
+        taxData.gpfNpsNo = document.getElementById('empGpfNps').value;
+        taxData.gender = document.getElementById('empGender').value;
+        taxData.state = document.getElementById('empState').value;
+        taxData.district = document.getElementById('empDistrict').value;
+        taxData.hraType = document.getElementById('empHraType').value;
+        taxData.hillAllow = parseFloat(document.getElementById('empHill').value) || 0;
+        taxData.sghs = parseFloat(document.getElementById('empSghs').value) || 0;
+        taxData.payScale = document.getElementById('empPayScale').value;
+        taxData.basicMarch = parseFloat(document.getElementById('empBasicMarch').value) || 52000;
+        taxData.incrementMonth = document.getElementById('empIncMonth').value;
+        taxData.gis = parseFloat(document.getElementById('empGis').value) || 200;
+        taxData.daRate = parseFloat(document.getElementById('empDaRate').value) || 50;
+        taxData.daEffectiveMonth = document.getElementById('empDaEffMonth').value;
+        taxData.daRateNew = parseFloat(document.getElementById('empDaRateNew').value) || taxData.daRate;
+        taxData.otherAllow = parseFloat(document.getElementById('empOtherAllow').value) || 0;
+        taxData.bonus = parseFloat(document.getElementById('empBonus').value) || 0;
+        taxData.daArrears = parseFloat(document.getElementById('empDaArrear').value) || 0;
+        taxData.otherArrear = parseFloat(document.getElementById('empOtherArrear').value) || 0;
+        taxData.otherIncome = parseFloat(document.getElementById('empOtherIncome').value) || 0;
+        taxData.deductionType = document.getElementById('empDedType').value;
+        taxData.gpfMonthly = parseFloat(document.getElementById('empGpfMonthly').value) || 0;
+        taxData.deductionStartMonth = document.getElementById('empDedStartMonth').value;
+        taxData.incomeTaxMonthly = parseFloat(document.getElementById('empTaxMonthly').value) || 0;
+        taxData.taxChangeMonth = document.getElementById('empTaxChangeMonth').value;
+        taxData.incomeTaxChangedMonthly = parseFloat(document.getElementById('empTaxChangedMonthly').value) || taxData.incomeTaxMonthly;
+        taxData.taxChangeOption = document.getElementById('empTaxChangeOpt').value;
+
+        // Old Regime Deductions
+        taxData.ded80C = parseFloat(document.getElementById('emp80C').value) || 0;
+        taxData.ded80CCD1B = parseFloat(document.getElementById('emp80CCD').value) || 0;
+        taxData.ded80D = parseFloat(document.getElementById('emp80D').value) || 0;
+        taxData.ded80EEA = parseFloat(document.getElementById('emp80EEA').value) || 0;
+        taxData.ded80G = parseFloat(document.getElementById('emp80G').value) || 0;
+        taxData.ded80TTA = parseFloat(document.getElementById('emp80TTA').value) || 0;
+
+        localStorage.setItem('taxCalculatorData_2026_27', JSON.stringify(taxData));
+        alert('✅ सभी विवरण सफलतापूर्वक सेव हो गए हैं!');
+        showPage('salary-statement');
+    }
+
+    function triggerManualPrint() { window.print(); }
+
+    function getMonthIndex(mName) {
+        let monthsOrder = ["March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February"];
+        return monthsOrder.indexOf(mName);
+    }
+
+    function showPage(pageId, subTab = '') {
+        if(pageId !== 'form-16' && pageId !== 'salary-statement') updateActiveButton(pageId);
+        const contentDiv = document.getElementById('page-content');
+        
+        const devLineHTML = `<div class="top-dev-line">Tax Calculator Developed by: <b>Fahim Islam (A.T.) Math, Ghss Timlagoonth, Pati (Champawat)</b> | Mo. 7467860304</div>`;
+        const signatureBlock = `
+            <div class="clearfix"></div>
+            <div class="print-signature">
+                <b>${taxData.name}</b><br>
+                ${taxData.designation}<br>
+                ${taxData.school}
+            </div>
+            <div class="clearfix"></div>
+        `;
+
+        if(pageId === 'home') {
+            contentDiv.innerHTML = `
+                <div class="card-box">
+                    <h2 class="text-primary fw-bold mb-3">Welcome to Income Tax Calculator Dashboard</h2>
+                    <p class="lead">यह सॉफ्टवेयर वित्तीय वर्ष <strong>2026-27 (Assessment Year 2027-28)</strong> के लिए इनकम टैक्स की सटीक गणना करने हेतु डिज़ाइन किया गया है।</p>
+                    <hr>
+                    <h5 class="fw-bold mt-4">📊 Financial Year 2026-27 Highlights:</h5>
+                    <ul class="mb-4">
+                        <li><strong>New Tax Regime:</strong> आकर्षक टैक्स स्लैब और बढ़ी हुई टैक्स छूट के साथ।</li>
+                        <li><strong>Old Tax Regime:</strong> पारंपरिक कटौतियों के साथ गणना।</li>
+                        <li><strong>Form 16 Management:</strong> बैंक और कार्यालय हेतु संपूर्ण टीडीएस विवरण।</li>
+                    </ul>
+                    <div class="text-center my-4">
+                        <button class="btn btn-primary btn-lg px-5 fw-bold shadow" onclick="showPage('fill-form')">🚀 Let's Go - Start Tax Filing</button>
+                    </div>
+                </div>`;
+        } 
+        else if(pageId === 'fill-form') {
+            let payScaleOptions = '';
+            let levels = [
+                {lvl: 1, range: "18000-56900", gp: "GP 1800"}, {lvl: 2, range: "19900-63200", gp: "GP 1900"}, 
+                {lvl: 3, range: "21700-69100", gp: "GP 2000"}, {lvl: 4, range: "25500-81100", gp: "GP 2400"}, 
+                {lvl: 5, range: "29200-92300", gp: "GP 2800"}, {lvl: 6, range: "35400-112400", gp: "GP 4200"}, 
+                {lvl: 7, range: "44900-142400", gp: "GP 4600"}, {lvl: 8, range: "47600-151100", gp: "GP 4800"}, 
+                {lvl: 9, range: "56100-177500", gp: "GP 5400"}, {lvl: 10, range: "56100-177500", gp: "GP 5400 (Level 10)"}, 
+                {lvl: 11, range: "67700-208700", gp: "GP 6600"}, {lvl: 12, range: "78800-209200", gp: "GP 7600"}, 
+                {lvl: 13, range: "123100-215900", gp: "GP 8700"}, {lvl: 14, range: "144200-218200", gp: "GP 8900"}, 
+                {lvl: 15, range: "182200-224100", gp: "GP 10000"}, {lvl: 16, range: "205400-224400", gp: "Apex/Cabinet"}
+            ];
+            levels.forEach(item => {
+                let valStr = `Level ${item.lvl} (${item.range}) [${item.gp}]`;
+                let selected = taxData.payScale === valStr ? 'selected' : '';
+                payScaleOptions += `<option value="${valStr}" ${selected}>Level ${item.lvl} : Range (${item.range}) [${item.gp}]</option>`;
+            });
+
+            let monthsList = ["March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February"];
+            let effMonthOptions = '';
+            monthsList.forEach(m => {
+                let sel = (taxData.daEffectiveMonth === m) ? 'selected' : '';
+                effMonthOptions += `<option value="${m}" ${sel}>${m}</option>`;
+            });
+
+            let taxChangeMonthOptions = `<option value="None" ${taxData.taxChangeMonth === 'None' ? 'selected' : ''}>None (No change)</option>`;
+            monthsList.forEach(m => {
+                let sel = (taxData.taxChangeMonth === m) ? 'selected' : '';
+                taxChangeMonthOptions += `<option value="${m}" ${sel}>${m}</option>`;
+            });
+
+            contentDiv.innerHTML = `
+                <div class="card-box">
+                    <h3 class="text-primary fw-bold mb-3">📝 Comprehensive Income Tax Details Form (FY 2026-27)</h3>
+                    <p class="text-muted">कृपया नीचे दिए गए सभी कॉलम सावधानीपूर्वक भरें।</p>
+                    <hr>
+                    <form onsubmit="saveFormData(event)">
+                        <div class="section-title">1. व्यक्तिगत एवं कार्यालय विवरण (Personal & Office Details)</div>
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label fw-bold">Name of Employee</label><input type="text" id="empName" class="form-control" value="${taxData.name}" required></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Employee's Designation</label><input type="text" id="empDesig" class="form-control" value="${taxData.designation}" required></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">School/College/Institute/Office Name</label><input type="text" id="empSchool" class="form-control" value="${taxData.school}" required></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Whatsapp No.</label><input type="text" id="empWhatsapp" class="form-control" value="${taxData.whatsapp}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">PAN of Employee</label><input type="text" id="empPan" class="form-control" value="${taxData.pan}" required></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Treasury Code</label><input type="text" id="empTreasury" class="form-control" value="${taxData.treasuryCode}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">GPF/NPS Number</label><input type="text" id="empGpfNps" class="form-control" value="${taxData.gpfNpsNo}"></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Gender</label>
+                                <select id="empGender" class="form-control">
+                                    <option value="Male" ${taxData.gender === 'Male' ? 'selected' : ''}>Male</option>
+                                    <option value="Female" ${taxData.gender === 'Female' ? 'selected' : ''}>Female</option>
+                                    <option value="Other" ${taxData.gender === 'Other' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">State Name</label><input type="text" id="empState" class="form-control" value="${taxData.state}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">District Name</label><input type="text" id="empDistrict" class="form-control" value="${taxData.district}"></div>
+                        </div>
+
+                        <div class="section-title">2. वेतन, भत्ते एवं डीए (Pay Matrix & DA Effective Rate Options)</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">HRA Category</label>
+                                <select id="empHraType" class="form-control">
+                                    <option value="B-2" ${taxData.hraType === 'B-2' ? 'selected' : ''}>B-2</option>
+                                    <option value="C" ${taxData.hraType === 'C' ? 'selected' : ''}>C</option>
+                                    <option value="Rural" ${taxData.hraType === 'Rural' ? 'selected' : ''}>Rural</option>
+                                    <option value="Not Received" ${taxData.hraType === 'Not Received' ? 'selected' : ''}>HRA Not Received</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Hill Allowance (पर्वतीय भत्ता)</label><input type="number" id="empHill" class="form-control" value="${taxData.hillAllow}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">SGHS (स्वास्थ्य बीमा)</label><input type="number" id="empSghs" class="form-control" value="${taxData.sghs}"></div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Pay Scale (Level 1 to 16 with Grade Pay)</label>
+                                <select id="empPayScale" class="form-control">${payScaleOptions}</select>
+                            </div>
+                            <div class="col-md-6"><label class="form-label fw-bold">Basic Pay as on March</label><input type="number" id="empBasicMarch" class="form-control" value="${taxData.basicMarch}"></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Month Increment</label>
+                                <select id="empIncMonth" class="form-control">
+                                    <option value="January" ${taxData.incrementMonth === 'January' ? 'selected' : ''}>January</option>
+                                    <option value="July" ${taxData.incrementMonth === 'July' ? 'selected' : ''}>July</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">GIS</label><input type="number" id="empGis" class="form-control" value="${taxData.gis}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Initial DA Rate (%) (शुरुआती)</label><input type="number" id="empDaRate" class="form-control" value="${taxData.daRate}"></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">DA Effective From Month (कब से बदला)</label>
+                                <select id="empDaEffMonth" class="form-control">${effMonthOptions}</select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">New DA Rate (%) (बदला हुआ प्रतिशत)</label><input type="number" id="empDaRateNew" class="form-control" value="${taxData.daRateNew}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Other Allowance</label><input type="number" id="empOtherAllow" class="form-control" value="${taxData.otherAllow}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Bonus</label><input type="number" id="empBonus" class="form-control" value="${taxData.bonus}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">DA Arrear</label><input type="number" id="empDaArrear" class="form-control" value="${taxData.daArrears}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Any Other Arrear</label><input type="number" id="empOtherArrear" class="form-control" value="${taxData.otherArrear}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Any Other Income</label><input type="number" id="empOtherIncome" class="form-control" value="${taxData.otherIncome}"></div>
+                        </div>
+
+                        <div class="section-title">3. कटौतियाँ एवं TDS (GPF/NPS & TDS Monthly Auto Adjustment)</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Type of Deduction (GPF or NPS)</label>
+                                <select id="empDedType" class="form-control">
+                                    <option value="NPS" ${taxData.deductionType === 'NPS' ? 'selected' : ''}>NPS (10% Employee Contribution)</option>
+                                    <option value="GPF" ${taxData.deductionType === 'GPF' ? 'selected' : ''}>GPF (Fixed Monthly Amount)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">GPF Monthly Deduction Amount (यदि GPF चुनें)</label><input type="number" id="empGpfMonthly" class="form-control" value="${taxData.gpfMonthly}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Deduction Start Month</label><input type="text" id="empDedStartMonth" class="form-control" value="${taxData.deductionStartMonth}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Initial Income Tax TDS per Month (March-Jan)</label><input type="number" id="empTaxMonthly" class="form-control" value="${taxData.incomeTaxMonthly}"></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">TDS Tax Changed in Month (किस महीने से TDS बदला)</label>
+                                <select id="empTaxChangeMonth" class="form-control">${taxChangeMonthOptions}</select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Changed Income Tax TDS per Month</label><input type="number" id="empTaxChangedMonthly" class="form-control" value="${taxData.incomeTaxChangedMonthly}"></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Tax Variation Option</label>
+                                <select id="empTaxChangeOpt" class="form-control">
+                                    <option value="no change" ${taxData.taxChangeOption === 'no change' ? 'selected' : ''}>No change</option>
+                                    <option value="changing" ${taxData.taxChangeOption === 'changing' ? 'selected' : ''}>Changing in Income tax</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="section-title">4. पुरानी कर व्यवस्था हेतु कटौतियाँ (Old Tax Regime 80C, 80D etc.)</div>
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label fw-bold">80C Deduction (Max 1.5L)</label><input type="number" id="emp80C" class="form-control" value="${taxData.ded80C}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">80CCD(1B) NPS (Max 50k)</label><input type="number" id="emp80CCD" class="form-control" value="${taxData.ded80CCD1B}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">80D Mediclaim</label><input type="number" id="emp80D" class="form-control" value="${taxData.ded80D}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">80EEA Interest on Home Loan</label><input type="number" id="emp80EEA" class="form-control" value="${taxData.ded80EEA}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">80G Donation</label><input type="number" id="emp80G" class="form-control" value="${taxData.ded80G}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">80TTA Savings Interest</label><input type="number" id="emp80TTA" class="form-control" value="${taxData.ded80TTA}"></div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold shadow">💾 Save & Generate Salary Statement</button>
+                        </div>
+                    </form>
+                </div>`;
+        } 
+        else if(pageId === 'salary-statement') {
+            updateActiveButton('salary-statement');
+            let activeSub = subTab || 'new';
+
+            const months = ["March-26", "April-26", "May-26", "June-26", "July-26", "August-26", "September-26", "October-26", "November-26", "December-26", "January-27", "February-27"];
+            let baseBasic = taxData.basicMarch;
+            let incAmt = 1600;
+            let incMonth = taxData.incrementMonth;
+
+            let netTaxRequired = (activeSub === 'new') ? calculateNewRegimeTaxPayable() : calculateOldRegimeTaxPayable();
+            let changeMonthIdx = taxData.taxChangeMonth !== 'None' ? getMonthIndex(taxData.taxChangeMonth) : 999;
+
+            let tdsPaidMarchToJan = 0;
+            for(let i=0; i<11; i++) {
+                let mFullName = months[i].split("-")[0];
+                let mIdx = getMonthIndex(mFullName);
+                let curIt = (mIdx >= changeMonthIdx && taxData.taxChangeMonth !== 'None') ? taxData.incomeTaxChangedMonthly : taxData.incomeTaxMonthly;
+                tdsPaidMarchToJan += curIt;
+            }
+            let febTdsAmount = Math.max(0, netTaxRequired - tdsPaidMarchToJan);
+
+            let tableRowsHTML = "";
+            let tBasic = 0, tDa = 0, tHra = 3600*12, tHill = taxData.hillAllow*12, tSpec = taxData.otherAllow*12, tPay = 0;
+            let tDedTypeAmount = 0, tNpsGovt = 0, tGis = taxData.gis*12, tIt = 0, tSghs = taxData.sghs*12, tDed = 0, tNet = 0;
+
+            months.forEach((mName, index) => {
+                let currentBasic = baseBasic;
+                if (incMonth === "July" && index >= 4) {
+                    currentBasic = baseBasic + incAmt;
+                } else if (incMonth === "January" && index >= 10) {
+                    currentBasic = baseBasic + incAmt;
+                }
+
+                let currentMonthNameOnly = mName.split("-")[0];
+                let effMonthIdx = getMonthIndex(taxData.daEffectiveMonth);
+                let currentMonthIdx = getMonthIndex(currentMonthNameOnly);
+                let activeDaRate = (currentMonthIdx >= effMonthIdx) ? taxData.daRateNew : taxData.daRate;
+
+                let da = Math.round(currentBasic * (activeDaRate / 100));
+                let hra = 3600;
+                let hill = taxData.hillAllow;
+                let spec = taxData.otherAllow;
+                let daArr = (mName === "June-26") ? taxData.daArrears : 0;
+                let bonusVal = (mName === "October-26") ? taxData.bonus : 0;
+
+                let it = taxData.incomeTaxMonthly;
+                if(taxData.taxChangeMonth !== 'None' && currentMonthIdx >= changeMonthIdx) {
+                    it = taxData.incomeTaxChangedMonthly;
+                }
+                if(currentMonthNameOnly === "February") {
+                    it = febTdsAmount;
+                }
+
+                let deductionColVal = 0;
+                let npsGovt = 0;
+                if (taxData.deductionType === 'NPS') {
+                    deductionColVal = Math.round((currentBasic + da) * 0.10);
+                    npsGovt = Math.round((currentBasic + da) * 0.14);
+                } else {
+                    deductionColVal = taxData.gpfMonthly;
+                    npsGovt = 0;
+                }
+
+                let gis = taxData.gis;
+                let sghs = taxData.sghs;
+
+                let totPay = currentBasic + da + daArr + bonusVal + hra + hill + spec;
+                let totDed = deductionColVal + gis + it + sghs;
+                let netPay = totPay - totDed;
+
+                tBasic += currentBasic; 
+                tDa += da; 
+                tPay += totPay;
+                tDedTypeAmount += deductionColVal; 
+                tNpsGovt += npsGovt; 
+                tIt += it;
+                tDed += totDed; 
+                tNet += netPay;
+
+                tableRowsHTML += `
+                    <tr>
+                        <td><b>${mName}</b></td>
+                        <td>${activeDaRate}%</td>
+                        <td>${currentBasic.toLocaleString()}</td>
+                        <td>${da.toLocaleString()}</td>
+                        <td>${daArr > 0 ? daArr.toLocaleString() : '-'}</td>
+                        <td>${bonusVal > 0 ? bonusVal.toLocaleString() : '-'}</td>
+                        <td>${hra.toLocaleString()}</td>
+                        <td>${hill.toLocaleString()}</td>
+                        <td>${spec > 0 ? spec.toLocaleString() : '-'}</td>
+                        <td><b>${totPay.toLocaleString()}</b></td>
+                        <td>${deductionColVal.toLocaleString()}</td>
+                        <td>${npsGovt > 0 ? npsGovt.toLocaleString() : '-'}</td>
+                        <td>${gis.toLocaleString()}</td>
+                        <td>${it.toLocaleString()}</td>
+                        <td>${sghs.toLocaleString()}</td>
+                        <td><b>${totDed.toLocaleString()}</b></td>
+                        <td><b>${netPay.toLocaleString()}</b></td>
+                    </tr>
+                `;
+            });
+
+            contentDiv.innerHTML = `
+                <div class="card-box">
+                    ${devLineHTML}
+                    <div class="statement-header">
+                        <div>
+                            <span class="text-danger fw-bold">Beneficial- Statement (${activeSub === 'new' ? 'New Tax Regime' : 'Old Tax Regime'})</span>
+                            <h4 class="text-primary fw-bold mt-1">Annual Salary Statement for Financial Year:- 2026-27</h4>
+                        </div>
+                        <div class="logo-box">FI</div>
+                    </div>
+
+                    <div class="mb-4 no-print">
+                        <button class="btn ${activeSub === 'new' ? 'btn-primary' : 'btn-outline-primary'} sub-nav-btn me-2" onclick="showPage('salary-statement', 'new')">New Tax Statement</button>
+                        <button class="btn ${activeSub === 'old' ? 'btn-primary' : 'btn-outline-primary'} sub-nav-btn" onclick="showPage('salary-statement', 'old')">Old Tax Statement</button>
+                    </div>
+
+                    <div class="print-header-grid">
+                        <div>
+                            <b>Employee's Name:</b> ${taxData.name} (${taxData.gender})<br>
+                            <b>Designation & Pay Scale:</b> ${taxData.designation} (${taxData.payScale})<br>
+                            <b>Office/School:</b> ${taxData.school}<br>
+                            <b>District & State:</b> ${taxData.district}, ${taxData.state}
+                        </div>
+                        <div class="text-end">
+                            <b>Employee's PAN:</b> ${taxData.pan}<br>
+                            <b>Treasury Code:</b> ${taxData.treasuryCode} | <b>GPF/NPS:</b> ${taxData.gpfNpsNo}<br>
+                            <b>DA Rates:</b> ${taxData.daRate}% &rarr; ${taxData.daRateNew}% (from ${taxData.daEffectiveMonth})<br>
+                            <b>Whatsapp:</b> ${taxData.whatsapp}
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped salary-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th><th>D.A.%</th><th>Basic</th><th>D.A.</th><th>DA Arr.</th><th>Bonus</th><th>HRA</th><th>Hill</th><th>Other</th><th>Total Pay</th><th>${taxData.deductionType}</th><th>Govt NPS</th><th>GIS</th><th>TDS</th><th>SGHS</th><th>Total Ded</th><th>Net Pay</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRowsHTML}
+                                <tr class="fw-bold bg-warning bg-opacity-25" style="font-size: 10px;">
+                                    <td colspan="2">TOTAL (12 Months)</td>
+                                    <td>${tBasic.toLocaleString()}</td><td>${tDa.toLocaleString()}</td><td>${taxData.daArrears.toLocaleString()}</td><td>${taxData.bonus.toLocaleString()}</td><td>${tHra.toLocaleString()}</td><td>${tHill.toLocaleString()}</td><td>${tSpec.toLocaleString()}</td><td><b>${(tPay + taxData.daArrears + taxData.bonus).toLocaleString()}</b></td><td>${tDedTypeAmount.toLocaleString()}</td><td>${tNpsGovt > 0 ? tNpsGovt.toLocaleString() : '-'}</td><td>${tGis.toLocaleString()}</td><td>${tIt.toLocaleString()}</td><td>${tSghs.toLocaleString()}</td><td><b>${tDed.toLocaleString()}</b></td><td><b>${(tNet + taxData.daArrears + taxData.bonus).toLocaleString()}</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ${signatureBlock}
+
+                    <div class="text-center mt-5 no-print">
+                        <button class="btn btn-primary px-4 fw-bold" onclick="triggerManualPrint()">🖨️ Open Print & Manual Settings</button>
+                    </div>
+                </div>`;
+        } 
+        else if(pageId === 'form-16') {
+            updateActiveButton('form-16');
+            let activeSub = subTab || 'new';
+            let totalGrossVal = calculateGrossSalary();
+            let totalTdsVal = calculateTotalTdsDeducted(activeSub);
+
+            let subContent = "";
+            if(activeSub === 'new') {
+                let stdDed = 75000;
+                let taxableSal = Math.max(0, totalGrossVal - stdDed);
+                let govtNpsTotal = (taxData.deductionType === 'NPS') ? calculateNpsGovtTotal() : 0;
+                let netDiff = calculateNewRegimeTaxPayable() - totalTdsVal;
+                let netResultColor = netDiff < 0 ? 'text-danger' : 'text-primary';
+                subContent = `
+                    <div class="alert alert-info"><b>FORM 16 (PART B) - NEW TAX REGIME</b><br>Particulars of Income and Tax Calculation for Bank / Treasury Verification:</div>
+                    <table class="tax-calc-table border p-3 bg-light rounded">
+                        <tr><td><b>Employee Name:</b> ${taxData.name}</td><td><b>PAN:</b> ${taxData.pan}</td></tr>
+                        <tr><td><b>Designation:</b> ${taxData.designation}</td><td><b>Treasury Code:</b> ${taxData.treasuryCode}</td></tr>
+                        <tr><td><b>Office/School:</b> ${taxData.school}</td><td><b>Assessment Year:</b> 2027-28</td></tr>
+                        <tr><td colspan="2"><hr></td></tr>
+                        <tr><td><b>1. Gross Salary (Including Allowances, Bonus & Arrears):</b></td><td class="text-end"><b>Rs. ${totalGrossVal.toLocaleString()}</b></td></tr>
+                        <tr><td><b>2. Less: Standard Deduction u/s 16(ia):</b></td><td class="text-end">Rs. ${stdDed.toLocaleString()}</td></tr>
+                        <tr><td><b>3. Income Chargeable under 'Salaries':</b></td><td class="text-end"><b>Rs. ${taxableSal.toLocaleString()}</b></td></tr>
+                        <tr><td><b>4. Less: Employer NPS Contribution u/s 80CCD(2):</b></td><td class="text-end">Rs. ${govtNpsTotal.toLocaleString()}</td></tr>
+                        <tr><td><b>5. Total Taxable Income:</b></td><td class="text-end"><b>Rs. ${Math.max(0, taxableSal - govtNpsTotal).toLocaleString()}</b></td></tr>
+                        <tr><td><b>6. Total Tax Payable:</b></td><td class="text-end"><b>Rs. ${calculateNewRegimeTaxPayable().toLocaleString()}</b></td></tr>
+                        <tr><td><b>7. Total Tax Deducted at Source (TDS) Deposited:</b></td><td class="text-end"><b>Rs. ${totalTdsVal.toLocaleString()}</b></td></tr>
+                        <tr class="table-warning"><td><b>8. Net Tax Payable / Refundable:</b></td><td class="text-end"><b class="${netResultColor}">Rs. ${Math.abs(netDiff).toLocaleString()} ${netDiff < 0 ? '(Refundable)' : ''}</b></td></tr>
+                    </table>
+                `;
+            } else {
+                let stdDedOld = 50000;
+                let taxableSalOld = Math.max(0, totalGrossVal - stdDedOld);
+                let totalDedOld = taxData.ded80C + taxData.ded80CCD1B + taxData.ded80D + taxData.ded80EEA + taxData.ded80G + taxData.ded80TTA;
+                let netDiffOld = calculateOldRegimeTaxPayable() - totalTdsVal;
+                let netResultColorOld = netDiffOld < 0 ? 'text-danger' : 'text-primary';
+                subContent = `
+                    <div class="alert alert-warning"><b>FORM 16 (PART B) - OLD TAX REGIME</b><br>Particulars of Income and Tax Deductions for Bank / Treasury Verification:</div>
+                    <table class="tax-calc-table border p-3 bg-light rounded">
+                        <tr><td><b>Employee Name:</b> ${taxData.name}</td><td><b>PAN:</b> ${taxData.pan}</td></tr>
+                        <tr><td><b>Designation:</b> ${taxData.designation}</td><td><b>Treasury Code:</b> ${taxData.treasuryCode}</td></tr>
+                        <tr><td><b>Office/School:</b> ${taxData.school}</td><td><b>Assessment Year:</b> 2027-28</td></tr>
+                        <tr><td colspan="2"><hr></td></tr>
+                        <tr><td><b>1. Gross Salary:</b></td><td class="text-end"><b>Rs. ${totalGrossVal.toLocaleString()}</b></td></tr>
+                        <tr><td><b>2. Less: Standard Deduction u/s 16(ia):</b></td><td class="text-end">Rs. ${stdDedOld.toLocaleString()}</td></tr>
+                        <tr><td><b>3. Income Chargeable under 'Salaries':</b></td><td class="text-end"><b>Rs. ${taxableSalOld.toLocaleString()}</b></td></tr>
+                        <tr><td><b>4. Total Chapter VI-A Deductions (80C, 80D etc.):</b></td><td class="text-end">Rs. ${totalDedOld.toLocaleString()}</td></tr>
+                        <tr><td><b>5. Total Taxable Income:</b></td><td class="text-end"><b>Rs. ${Math.max(0, taxableSalOld - totalDedOld).toLocaleString()}</b></td></tr>
+                        <tr><td><b>6. Total Tax Payable:</b></td><td class="text-end"><b>Rs. ${calculateOldRegimeTaxPayable().toLocaleString()}</b></td></tr>
+                        <tr><td><b>7. Total Tax Deducted at Source (TDS) Deposited:</b></td><td class="text-end"><b>Rs. ${totalTdsVal.toLocaleString()}</b></td></tr>
+                        <tr class="table-warning"><td><b>8. Net Tax Payable / Refundable:</b></td><td class="text-end"><b class="${netResultColorOld}">Rs. ${Math.abs(netDiffOld).toLocaleString()} ${netDiffOld < 0 ? '(Refundable)' : ''}</b></td></tr>
+                    </table>
+                `;
+            }
+
+            contentDiv.innerHTML = `
+                <div class="card-box">
+                    ${devLineHTML}
+                    <h3 class="text-primary fw-bold mb-3">📁 Form 16 Management (Bank & Treasury Verified)</h3>
+                    <div class="mb-4">
+                        <button class="btn ${activeSub === 'new' ? 'btn-primary' : 'btn-outline-primary'} sub-nav-btn me-2" onclick="showPage('form-16', 'new')">1. New Tax Regime Form 16</button>
+                        <button class="btn ${activeSub === 'old' ? 'btn-primary' : 'btn-outline-primary'} sub-nav-btn" onclick="showPage('form-16', 'old')">2. Old Tax Regime Form 16</button>
+                    </div>
+                    <hr>
+                    ${subContent}
+                    ${signatureBlock}
+                    <div class="text-center mt-5 no-print">
+                        <button class="btn btn-success px-4 fw-bold" onclick="triggerManualPrint()">🖨️ Print Form 16</button>
+                    </div>
+                </div>`;
+        }
+        else if(pageId === 'new-regime') {
+            updateActiveButton('new-regime');
+            let totalGross = calculateGrossSalary() + taxData.otherIncome;
+            let standardDeduction = 75000;
+            let incomeAfterStdDed = Math.max(0, totalGross - standardDeduction);
+            let npsGovtTotal = (taxData.deductionType === 'NPS') ? calculateNpsGovtTotal() : 0;
+            let taxableIncome = Math.max(0, incomeAfterStdDed - npsGovtTotal);
+
+            let slab2 = 0, slab3 = 0, slab4 = 0, slab5 = 0, slab6 = 0, slab7 = 0;
+            let rem = taxableIncome;
+
+            if (rem > 400000) slab2 = Math.min(rem - 400000, 400000) * 0.05;
+            if (rem > 800000) slab3 = Math.min(rem - 800000, 400000) * 0.10;
+            if (rem > 1200000) slab4 = Math.min(rem - 1200000, 400000) * 0.15;
+            if (rem > 1600000) slab5 = Math.min(rem - 1600000, 400000) * 0.20;
+            if (rem > 2000000) slab6 = Math.min(rem - 2000000, 400000) * 0.25;
+            if (rem > 2400000) slab7 = (rem - 2400000) * 0.30;
+
+            let totalTaxBeforeRebate = slab2 + slab3 + slab4 + slab5 + slab6 + slab7;
+            let rebate = (taxableIncome <= 1200000) ? totalTaxBeforeRebate : 0;
+            let taxAfterRebate = Math.max(0, totalTaxBeforeRebate - rebate);
+            let cess = Math.round(taxAfterRebate * 0.04);
+            let totalTaxPayable = taxAfterRebate + cess;
+            
+            let totalTdsDeducted = calculateTotalTdsDeducted('new');
+            
+            // Point 17: (15 - 16) -> Total Income Tax (15) minus Total Deducted Tax (16)
+            let netResult = totalTaxPayable - totalTdsDeducted;
+            let textColorClass = netResult < 0 ? 'text-danger' : 'text-primary';
+            let displayResultText = netResult < 0 ? Math.abs(netResult).toLocaleString() + ' (Refundable)' : netResult.toLocaleString();
+
+            let changeMonthIdx = taxData.taxChangeMonth !== 'None' ? getMonthIndex(taxData.taxChangeMonth) : 999;
+            let initialMonthsCount = 0;
+            let changedMonthsCount = 0;
+            const checkMonths = ["March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January"];
+            checkMonths.forEach(m => {
+                let mIdx = getMonthIndex(m);
+                if (mIdx < changeMonthIdx && taxData.taxChangeMonth !== 'None') {
+                    initialMonthsCount++;
+                } else {
+                    changedMonthsCount++;
+                }
+            });
+            if(taxData.taxChangeMonth === 'None') {
+                initialMonthsCount = 11;
+                changedMonthsCount = 0;
+            }
+
+            contentDiv.innerHTML = `
+                <div class="card-box">
+                    ${devLineHTML}
+                    <div class="statement-header">
+                        <div>
+                            <span class="text-danger fw-bold">Tax Detail as per New Regime</span>
+                            <h4 class="text-primary fw-bold mt-1">Income Tax Calculation for Financial Year:- 2026-27</h4>
+                        </div>
+                        <div class="logo-box">TC</div>
+                    </div>
+
+                    <div class="print-header-grid">
+                        <div>
+                            <b>Employee's Name & Designation:</b> ${taxData.name}, ${taxData.designation}<br>
+                            <b>Office/School:</b> ${taxData.school}, <b>District:</b> ${taxData.district}
+                        </div>
+                        <div class="text-end">
+                            <b>Employee's PAN:</b> ${taxData.pan}<br>
+                            <b>Treasury Code:</b> ${taxData.treasuryCode} | <b>GPF/NPS:</b> ${taxData.gpfNpsNo}
+                        </div>
+                    </div>
+
+                    <table class="tax-calc-table">
+                        <tr><td><b>01-</b> Gross Income from Salary</td><td class="text-end"><b>Rs. ${totalGross.toLocaleString()}</b></td></tr>
+                        <tr><td><b>02-</b> Less :-<br>&nbsp;&nbsp;&nbsp;&nbsp;(i) Transport Allowance for Handicapped Employee&nbsp;&nbsp;&nbsp;&nbsp;Rs. NIL<br>&nbsp;&nbsp;&nbsp;&nbsp;(ii) Standard Deduction u/s 16 (ia) Maximum Rs. 75,000&nbsp;&nbsp;&nbsp;&nbsp;Rs. ${standardDeduction.toLocaleString()}</td><td class="text-end"><br><br>Rs. ${standardDeduction.toLocaleString()}</td></tr>
+                        <tr><td><b>03-</b> Income Chargeable under the Head 'Salaries' (01-02)</td><td class="text-end"><b>Rs. ${incomeAfterStdDed.toLocaleString()}</b></td></tr>
+                        <tr><td><b>04-</b> Any Other Income/Loss reported by the Employee (Other than Salary):-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) Interest on Saving &mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(v) Service Pension &mdash;&mdash;&mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(ii) Interest on Deposit &mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(vi) Examination Duty Honorarium &mdash;&mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iii) Interest on I.Tax. Refund &mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(vii) Evaluation Duty Honorarium &mdash;&mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iv) Family Pension &mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(viii) Any Other Income &mdash;&mdash;&mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td><b>05-</b> Gross Total Income (3+4)</td><td class="text-end"><b>Rs. ${totalGross.toLocaleString()}</b></td></tr>
+                        <tr><td><b>06-</b> Deductions :-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) Employer's Contr. (u/s 80CCD-2) in NPS Maximum 14% of Salary</td><td class="text-end">Rs. ${npsGovtTotal.toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(ii) Deduction u/s 57(iia) (in case of family pension only)</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr class="table-light"><td><b>Total Deductions u/s (i to ii)</b></td><td class="text-end"><b>Rs. ${npsGovtTotal.toLocaleString()}</b></td></tr>
+                        <tr><td><b>07-</b> Taxable Income (5-6)</td><td class="text-end"><b>Rs. ${taxableIncome.toLocaleString()}</b></td></tr>
+                        <tr><td><b>08-</b> Income Tax Calculation :-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) Up to Rs. 4,00,000</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(ii) From Rs. 4,00,001 to Rs. 8,00,000 @5%</td><td class="text-end">Rs. ${Math.round(slab2).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(iii) From Rs. 8,00,001 to Rs. 12,00,000 @10%</td><td class="text-end">Rs. ${Math.round(slab3).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(iv) From Rs. 12,00,001 to Rs. 16,00,000 @15%</td><td class="text-end">Rs. ${Math.round(slab4).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(v) From Rs. 16,00,001 to Rs. 20,00,000 @20%</td><td class="text-end">Rs. ${Math.round(slab5).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(vi) From Rs. 20,00,001 to Rs. 24,00,000 @25%</td><td class="text-end">Rs. ${Math.round(slab6).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(vii) Above Rs. 24,00,000 @30%</td><td class="text-end">Rs. ${Math.round(slab7).toLocaleString()}</td></tr>
+                        <tr class="table-light"><td><b>Total Income Tax (i to vii)</b></td><td class="text-end"><b>Rs. ${Math.round(totalTaxBeforeRebate).toLocaleString()}</b></td></tr>
+                        <tr><td><b>09-</b> Rebate u/s 87A (Full rebate if Taxable Income ≤ ₹12,00,000)</td><td class="text-end">Rs. ${Math.round(rebate).toLocaleString()}</td></tr>
+                        <tr><td><b>10-</b> Tax Payable after Rebate (8-9)</td><td class="text-end">Rs. ${Math.max(0, Math.round(totalTaxBeforeRebate - rebate)).toLocaleString()}</td></tr>
+                        <tr><td><b>11-</b> Surcharge, wherever applicable</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>12-</b> Education & Health Cess @ 4%</td><td class="text-end">Rs. ${cess.toLocaleString()}</td></tr>
+                        <tr><td><b>13-</b> Total Tax (10+11+12)</td><td class="text-end"><b>Rs. ${totalTaxPayable.toLocaleString()}</b></td></tr>
+                        <tr><td><b>14-</b> Less: Relief under Section 89 (Attach Detail)</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>15-</b> Tax Payable after Relief u/s 89 (13-14)</td><td class="text-end"><b>Rs. ${totalTaxPayable.toLocaleString()}</b></td></tr>
+                        <tr><td><b>16-</b> Income Tax Deductions (TDS) in Financial Year 2026-27 :-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) Income Tax Deduction from Salary up to January 2027</td><td class="text-end">Rs. ${(taxData.incomeTaxMonthly * initialMonthsCount) + (taxData.incomeTaxChangedMonthly * changedMonthsCount)}</td></tr>
+                        <tr><td class="ps-4">(ii) Income Tax Deducted on Arrears</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iii) Advance Tax Deposited by Challan and TDS on income other than salary</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iv) Income Tax Deduction in Month of February 2027</td><td class="text-end">Rs. ${Math.max(0, totalTaxPayable - ((taxData.incomeTaxMonthly * initialMonthsCount) + (taxData.incomeTaxChangedMonthly * changedMonthsCount)))}</td></tr>
+                        <tr class="table-light"><td><b>Total Deducted Tax (i to iv)</b></td><td class="text-end"><b>Rs. ${totalTdsDeducted.toLocaleString()}</b></td></tr>
+                        <tr class="table-warning fw-bold"><td><b>17- Tax Payable / (Refundable) (15-16)</b></td><td class="text-end"><b class="${textColorClass}">Rs. ${displayResultText}</b></td></tr>
+                    </table>
+
+                    ${signatureBlock}
+
+                    <div class="text-center mt-5 no-print">
+                        <button class="btn btn-primary px-4 fw-bold me-2" onclick="triggerManualPrint()">🖨️ Open Print Settings</button>
+                    </div>
+                </div>`;
+        } 
+        else if(pageId === 'old-regime') {
+            updateActiveButton('old-regime');
+            let totalGross = calculateGrossSalary() + taxData.otherIncome;
+            let standardDeductionOld = 50000;
+            let incomeAfterStdDedOld = Math.max(0, totalGross - standardDeductionOld);
+
+            let totalDeductions = taxData.ded80C + taxData.ded80CCD1B + taxData.ded80D + taxData.ded80EEA + taxData.ded80G + taxData.ded80TTA;
+            let taxableIncomeOld = Math.max(0, incomeAfterStdDedOld - totalDeductions);
+
+            let oldSlab2 = 0, oldSlab3 = 0, oldSlab4 = 0;
+            let remOld = taxableIncomeOld;
+
+            if (remOld > 250000) oldSlab2 = Math.min(remOld - 250000, 250000) * 0.05;
+            if (remOld > 500000) oldSlab3 = Math.min(remOld - 500000, 500000) * 0.20;
+            if (remOld > 1000000) oldSlab4 = (remOld - 1000000) * 0.30;
+
+            let totalTaxBeforeRebateOld = oldSlab2 + oldSlab3 + oldSlab4;
+            let rebateOld = (taxableIncomeOld <= 500000) ? Math.min(totalTaxBeforeRebateOld, 12500) : 0;
+            let taxAfterRebateOld = Math.max(0, totalTaxBeforeRebateOld - rebateOld);
+            let cessOld = Math.round(taxAfterRebateOld * 0.04);
+            let totalTaxPayableOld = taxAfterRebateOld + cessOld;
+            let totalTdsDeductedOld = calculateTotalTdsDeducted('old');
+            
+            let netResultOld = totalTaxPayableOld - totalTdsDeductedOld;
+            let textColorClassOld = netResultOld < 0 ? 'text-danger' : 'text-primary';
+            let displayResultTextOld = netResultOld < 0 ? Math.abs(netResultOld).toLocaleString() + ' (Refundable)' : netResultOld.toLocaleString();
+
+            let changeMonthIdx = taxData.taxChangeMonth !== 'None' ? getMonthIndex(taxData.taxChangeMonth) : 999;
+            let initialMonthsCount = 0;
+            let changedMonthsCount = 0;
+            const checkMonths = ["March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January"];
+            checkMonths.forEach(m => {
+                let mIdx = getMonthIndex(m);
+                if (mIdx < changeMonthIdx && taxData.taxChangeMonth !== 'None') {
+                    initialMonthsCount++;
+                } else {
+                    changedMonthsCount++;
+                }
+            });
+            if(taxData.taxChangeMonth === 'None') {
+                initialMonthsCount = 11;
+                changedMonthsCount = 0;
+            }
+
+            contentDiv.innerHTML = `
+                <div class="card-box">
+                    ${devLineHTML}
+                    <div class="statement-header">
+                        <div>
+                            <span class="text-danger fw-bold">Tax Detail as per Old Regime</span>
+                            <h4 class="text-primary fw-bold mt-1">Income Tax Calculation for Financial Year:- 2026-27</h4>
+                        </div>
+                        <div class="logo-box">TC</div>
+                    </div>
+
+                    <div class="print-header-grid">
+                        <div>
+                            <b>Employee's Name & Designation:</b> ${taxData.name}, ${taxData.designation}<br>
+                            <b>Office/School:</b> ${taxData.school}, <b>District:</b> ${taxData.district}
+                        </div>
+                        <div class="text-end">
+                            <b>Employee's PAN:</b> ${taxData.pan}<br>
+                            <b>Treasury Code:</b> ${taxData.treasuryCode} | <b>GPF/NPS:</b> ${taxData.gpfNpsNo}
+                        </div>
+                    </div>
+
+                    <table class="tax-calc-table">
+                        <tr><td><b>01-</b> Gross Income from Salary</td><td class="text-end"><b>Rs. ${totalGross.toLocaleString()}</b></td></tr>
+                        <tr><td><b>02-</b> Less :- Allowance to the extent exempt u/s 10 :-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) House Rent Allowance &mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(ii) Hill Allowance &mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Rs. ${taxData.hillAllow * 12}</td><td class="text-end">Rs. ${taxData.hillAllow * 12}</td></tr>
+                        <tr><td class="ps-4">(iii) Other Allowances &mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr class="table-light"><td><b>Total of 2 (i to iii)</b></td><td class="text-end"><b>Rs. ${taxData.hillAllow * 12}</b></td></tr>
+                        <tr><td><b>03-</b> Net Salary (1-2)</td><td class="text-end"><b>Rs. ${(totalGross - (taxData.hillAllow * 12)).toLocaleString()}</b></td></tr>
+                        <tr><td><b>04-</b> Standard Deduction u/s 16 (ia) Maximum Rs. 50,000</td><td class="text-end">Rs. ${standardDeductionOld.toLocaleString()}</td></tr>
+                        <tr><td><b>05-</b> Income Chargeable under the Head 'Salaries' (3-4)</td><td class="text-end"><b>Rs. ${(totalGross - (taxData.hillAllow * 12) - standardDeductionOld).toLocaleString()}</b></td></tr>
+                        <tr><td><b>06-</b> Any Other Income/Loss reported by the Employee (Other than Salary):-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) Interest on Saving &mdash;&mdash; Rs. NIL</td><td class="text-end">(v) Family Pension &mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(ii) Interest on Deposit &mdash; Rs. NIL</td><td class="text-end">(vi) Service Pension &mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iii) Interest on I.T.Refund &mdash; Rs. NIL</td><td class="text-end">(vii) Examination Duty Honorarium &mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iv) Family Pension &mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(viii) Any Other Income &mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td><b>07-</b> Gross Total Income (5+6)</td><td class="text-end"><b>Rs. ${incomeAfterStdDedOld.toLocaleString()}</b></td></tr>
+                        <tr><td><b>08-</b> Deductions under Chapter VI A (80C, 80CCC and 80CCD-1) :-</td><td></td></tr>
+                        <tr><td class="ps-4">(i) G.P.F. / ${taxData.deductionType} &mdash; Rs. ${taxData.ded80C}</td><td class="text-end">(ix) Tuition Fees Paid &mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(ii) G.I.S. &mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(x) Re-Payment of Housing Loan &mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iii) L.I.C. &mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(xi) Sukanya Samriddhi Yojana &mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iv) N.S.C. &mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(xii) 5 Years Fixed Deposit &mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(v) P.P.F. &mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(xiii) Tax Saving Mutual Fund &mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(vi) P.L.I. &mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(xiv) Term Life Insurance Plan &mdash;&mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(vii) 80CCC &mdash;&mdash;&mdash;&mdash;&mdash; Rs. NIL</td><td class="text-end">(xv) Senior Citizen Savings Scheme &mdash; Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(viii) 80CCD-1 &mdash;&mdash;&mdash; Rs. ${taxData.ded80CCD1B}</td><td class="text-end">(xvi) Any Other Deduction u/s 80C &mdash; Rs. NIL</td></tr>
+                        <tr class="table-light"><td><b>Total of 8 (i to xvi) Deductions u/s 80C</b></td><td class="text-end"><b>Rs. ${taxData.ded80C + taxData.ded80CCD1B}</b></td></tr>
+                        <tr><td><b>09-</b> Government/Employer's Contr. (u/s 80CCD-2) in NPS Maximum 14% of Salary</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>10-</b> Employee's Contr. in NPS u/s 80CCD (1B) Maximum Rs. 50,000</td><td class="text-end">Rs. ${taxData.ded80CCD1B.toLocaleString()}</td></tr>
+                        <tr><td><b>11-</b> Medi-Claim Premium u/s 80D Max. 25,000</td><td class="text-end">Rs. ${taxData.ded80D.toLocaleString()}</td></tr>
+                        <tr><td><b>12-</b> Interest on Loan Taken for Higher Education u/s 80E</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>13-</b> Interest on loan taken for Residential House u/s 80EEA Max. Rs. 1,50,000</td><td class="text-end">Rs. ${taxData.ded80EEA.toLocaleString()}</td></tr>
+                        <tr><td><b>14-</b> Donation in P.M./C.M. Relief fund 100% and 50% for any Trust u/s 80G</td><td class="text-end">Rs. ${taxData.ded80G.toLocaleString()}</td></tr>
+                        <tr><td><b>15-</b> Deduction towards Disability u/s 80U Max. 75,000</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>16-</b> Interest from Saving Account u/s 80TTA Max. 10,000</td><td class="text-end">Rs. ${taxData.ded80TTA.toLocaleString()}</td></tr>
+                        <tr><td><b>17-</b> Any Other Deduction</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr class="table-light"><td><b>18- Aggregate of Deductible Amount under Chapter VI A</b></td><td class="text-end"><b>Rs. ${totalDeductions.toLocaleString()}</b></td></tr>
+                        <tr><td><b>19- Taxable Income (7-18)</b></td><td class="text-end"><b>Rs. ${taxableIncomeOld.toLocaleString()}</b></td></tr>
+                        <tr><td><b>20- Income Tax Calculation :-</b></td><td></td></tr>
+                        <tr><td class="ps-4">(i) Up to Rs. 2,50,000</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(ii) From Rs. 2,50,001 to Rs. 5,00,000 @5%</td><td class="text-end">Rs. ${Math.round(oldSlab2).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(iii) From Rs. 5,00,001 to Rs. 10,00,000 @20%</td><td class="text-end">Rs. ${Math.round(oldSlab3).toLocaleString()}</td></tr>
+                        <tr><td class="ps-4">(iv) Above Rs. 10,00,000 @30%</td><td class="text-end">Rs. ${Math.round(oldSlab4).toLocaleString()}</td></tr>
+                        <tr class="table-light"><td><b>Total Tax Before Rebate (i to iv)</b></td><td class="text-end"><b>Rs. ${Math.round(totalTaxBeforeRebateOld).toLocaleString()}</b></td></tr>
+                        <tr><td><b>21- Rebate u/s 87A (If Taxable Income ≤ 5 Lakh)</b></td><td class="text-end">Rs. ${Math.round(rebateOld).toLocaleString()}</td></tr>
+                        <tr><td><b>22- Surcharge, wherever applicable</b></td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>23- Education & Health Cess @ 4%</b></td><td class="text-end">Rs. ${cessOld.toLocaleString()}</td></tr>
+                        <tr><td><b>24- Total Tax (21+22+23)</b></td><td class="text-end"><b>Rs. ${totalTaxPayableOld.toLocaleString()}</b></td></tr>
+                        <tr><td><b>25- Less: Relief under Section 89 (Attach Detail)</b></td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td><b>26- Tax Payable after Relief u/s 89 (24-25)</b></td><td class="text-end"><b>Rs. ${totalTaxPayableOld.toLocaleString()}</b></td></tr>
+                        <tr><td><b>27- Income Tax Deductions (TDS) in Financial Year 2026-27 :-</b></td><td></td></tr>
+                        <tr><td class="ps-4">(i) Income Tax Deduction from Salary up to January 2027</td><td class="text-end">Rs. ${(taxData.incomeTaxMonthly * initialMonthsCount) + (taxData.incomeTaxChangedMonthly * changedMonthsCount)}</td></tr>
+                        <tr><td class="ps-4">(ii) Income Tax Deducted on Arrears</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iii) Advance Tax Deposited by Challan and TDS on income other than salary</td><td class="text-end">Rs. NIL</td></tr>
+                        <tr><td class="ps-4">(iv) Income Tax Deduction in Month of February 2027</td><td class="text-end">Rs. ${Math.max(0, totalTaxPayableOld - ((taxData.incomeTaxMonthly * initialMonthsCount) + (taxData.incomeTaxChangedMonthly * changedMonthsCount)))}</td></tr>
+                        <tr class="table-light"><td><b>Total Deducted Tax (i to iv)</b></td><td class="text-end"><b>Rs. ${totalTdsDeductedOld.toLocaleString()}</b></td></tr>
+                        <tr class="table-warning fw-bold"><td><b>28- Tax Payable / (Refundable) (26-27)</b></td><td class="text-end"><b class="${textColorClassOld}">Rs. ${displayResultTextOld}</b></td></tr>
+                    </table>
+
+                    ${signatureBlock}
+
+                    <div class="text-center mt-5 no-print">
+                        <button class="btn btn-primary px-4 fw-bold me-2" onclick="triggerManualPrint()">🖨️ Open Print Settings</button>
+                    </div>
+                </div>`;
+        }
+    }
+
+    function calculateGrossSalary() {
+        const months = ["March-26", "April-26", "May-26", "June-26", "July-26", "August-26", "September-26", "October-26", "November-26", "December-26", "January-27", "February-27"];
+        let baseBasic = taxData.basicMarch;
+        let incAmt = 1600;
+        let incMonth = taxData.incrementMonth;
+        let totalGross = 0;
+
+        months.forEach((mName, index) => {
+            let currentBasic = baseBasic;
+            if (incMonth === "July" && index >= 4) {
+                currentBasic = baseBasic + incAmt;
+            } else if (incMonth === "January" && index >= 10) {
+                currentBasic = baseBasic + incAmt;
+            }
+
+            let currentMonthNameOnly = mName.split("-")[0];
+            let effMonthIdx = getMonthIndex(taxData.daEffectiveMonth);
+            let currentMonthIdx = getMonthIndex(currentMonthNameOnly);
+            let activeDaRate = (currentMonthIdx >= effMonthIdx) ? taxData.daRateNew : taxData.daRate;
+
+            let da = Math.round(currentBasic * (activeDaRate / 100));
+            let bonusVal = (mName === "October-26") ? taxData.bonus : 0;
+            let totPay = currentBasic + da + 3600 + taxData.hillAllow + taxData.otherAllow + bonusVal;
+            if(mName === "June-26") totPay += taxData.daArrears;
+            totalGross += totPay;
+        });
+        return totalGross + taxData.otherArrear;
+    }
+
+    function calculateTotalTdsDeducted(regimeType = 'new') {
+        const months = ["March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February"];
+        let netTaxRequired = (regimeType === 'new') ? calculateNewRegimeTaxPayable() : calculateOldRegimeTaxPayable();
+        let changeMonthIdx = taxData.taxChangeMonth !== 'None' ? getMonthIndex(taxData.taxChangeMonth) : 999;
+
+        let tdsPaidMarchToJan = 0;
+        for(let i=0; i<11; i++) {
+            let mFullName = months[i];
+            let mIdx = getMonthIndex(mFullName);
+            let curIt = (mIdx >= changeMonthIdx && taxData.taxChangeMonth !== 'None') ? taxData.incomeTaxChangedMonthly : taxData.incomeTaxMonthly;
+            tdsPaidMarchToJan += curIt;
+        }
+        let febTds = Math.max(0, netTaxRequired - tdsPaidMarchToJan);
+        return tdsPaidMarchToJan + febTds;
+    }
+
+    function calculateNpsGovtTotal() {
+        const months = ["March-26", "April-26", "May-26", "June-26", "July-26", "August-26", "September-26", "October-26", "November-26", "December-26", "January-27", "February-27"];
+        let baseBasic = taxData.basicMarch;
+        let incAmt = 1600;
+        let incMonth = taxData.incrementMonth;
+        let npsGovtTotal = 0;
+
+        months.forEach((mName, index) => {
+            let currentBasic = baseBasic;
+            if (incMonth === "July" && index >= 4) {
+                currentBasic = baseBasic + incAmt;
+            } else if (incMonth === "January" && index >= 10) {
+                currentBasic = baseBasic + incAmt;
+            }
+            let currentMonthNameOnly = mName.split("-")[0];
+            let effMonthIdx = getMonthIndex(taxData.daEffectiveMonth);
+            let currentMonthIdx = getMonthIndex(currentMonthNameOnly);
+            let activeDaRate = (currentMonthIdx >= effMonthIdx) ? taxData.daRateNew : taxData.daRate;
+
+            let da = Math.round(currentBasic * (activeDaRate / 100));
+            npsGovtTotal += Math.round((currentBasic + da) * 0.14);
+        });
+        return npsGovtTotal;
+    }
+
+    function calculateNewRegimeTaxPayable() {
+        let totalGross = calculateGrossSalary() + taxData.otherIncome;
+        let standardDeduction = 75000;
+        let incomeAfterStdDed = Math.max(0, totalGross - standardDeduction);
+        let npsGovtTotal = (taxData.deductionType === 'NPS') ? calculateNpsGovtTotal() : 0;
+        let taxableIncome = Math.max(0, incomeAfterStdDed - npsGovtTotal);
+
+        let slab2 = 0, slab3 = 0, slab4 = 0, slab5 = 0, slab6 = 0, slab7 = 0;
+        let rem = taxableIncome;
+        if (rem > 400000) slab2 = Math.min(rem - 400000, 400000) * 0.05;
+        if (rem > 800000) slab3 = Math.min(rem - 800000, 400000) * 0.10;
+        if (rem > 1200000) slab4 = Math.min(rem - 1200000, 400000) * 0.15;
+        if (rem > 1600000) slab5 = Math.min(rem - 1600000, 400000) * 0.20;
+        if (rem > 2000000) slab6 = Math.min(rem - 2000000, 400000) * 0.25;
+        if (rem > 2400000) slab7 = (rem - 2400000) * 0.30;
+
+        let totalTaxBeforeRebate = slab2 + slab3 + slab4 + slab5 + slab6 + slab7;
+        let rebate = (taxableIncome <= 1200000) ? totalTaxBeforeRebate : 0;
+        let taxAfterRebate = Math.max(0, totalTaxBeforeRebate - rebate);
+        let cess = Math.round(taxAfterRebate * 0.04);
+        return taxAfterRebate + cess;
+    }
+
+    function calculateOldRegimeTaxPayable() {
+        let totalGross = calculateGrossSalary() + taxData.otherIncome;
+        let standardDeductionOld = 50000;
+        let incomeAfterStdDedOld = Math.max(0, totalGross - standardDeductionOld);
+        let totalDeductions = taxData.ded80C + taxData.ded80CCD1B + taxData.ded80D + taxData.ded80EEA + taxData.ded80G + taxData.ded80TTA;
+        let taxableIncomeOld = Math.max(0, incomeAfterStdDedOld - totalDeductions);
+
+        let oldSlab2 = 0, oldSlab3 = 0, oldSlab4 = 0;
+        let remOld = taxableIncomeOld;
+        if (remOld > 250000) oldSlab2 = Math.min(remOld - 250000, 250000) * 0.05;
+        if (remOld > 500000) oldSlab3 = Math.min(remOld - 500000, 500000) * 0.20;
+        if (remOld > 1000000) oldSlab4 = (remOld - 1000000) * 0.30;
+
+        let totalTaxBeforeRebateOld = oldSlab2 + oldSlab3 + oldSlab4;
+        let rebateOld = (taxableIncomeOld <= 500000) ? Math.min(totalTaxBeforeRebateOld, 12500) : 0;
+        let taxAfterRebateOld = Math.max(0, totalTaxBeforeRebateOld - rebateOld);
+        let cessOld = Math.round(taxAfterRebateOld * 0.04);
+        return taxAfterRebateOld + cessOld;
+    }
+
+    // Default load home page
+    showPage('home');
+</script>
+</body>
+</html>
