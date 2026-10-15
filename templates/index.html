@@ -192,6 +192,16 @@
         showPage('salary-statement');
     }
 
+    // Reset Form Functionality
+    function resetFormData() {
+        if(confirm('क्या आप वाकई सभी फॉर्म डेटा को रीसेट (डिफ़ॉल्ट) करना चाहते हैं?')) {
+            taxData = JSON.parse(JSON.stringify(defaultTaxData));
+            localStorage.setItem('taxCalculatorData_2026_27', JSON.stringify(taxData));
+            showPage('fill-form');
+            alert('🔄 फॉर्म डेटा रीसेट कर दिया गया है!');
+        }
+    }
+
     function triggerManualPrint() { window.print(); }
 
     function getMonthIndex(mName) {
@@ -365,7 +375,8 @@
                         </div>
 
                         <div class="mt-4 text-center">
-                            <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold shadow">💾 Save & Generate Salary Statement</button>
+                            <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold shadow me-2">💾 Save & Generate Salary Statement</button>
+                            <button type="button" class="btn btn-danger btn-lg px-4 fw-bold shadow" onclick="resetFormData()">🔄 Reset Form</button>
                         </div>
                     </form>
                 </div>`;
@@ -617,14 +628,14 @@
             if (rem > 2400000) slab7 = (rem - 2400000) * 0.30;
 
             let totalTaxBeforeRebate = slab2 + slab3 + slab4 + slab5 + slab6 + slab7;
-            let rebate = (taxableIncome <= 1200000) ? totalTaxBeforeRebate : 0;
+            // Updated Rebate u/s 87A limit to 60000 (if taxable income <= 1200000)
+            let rebate = (taxableIncome <= 1200000) ? Math.min(totalTaxBeforeRebate, 60000) : 0;
             let taxAfterRebate = Math.max(0, totalTaxBeforeRebate - rebate);
             let cess = Math.round(taxAfterRebate * 0.04);
             let totalTaxPayable = taxAfterRebate + cess;
             
             let totalTdsDeducted = calculateTotalTdsDeducted('new');
             
-            // Point 17: (15 - 16) -> Total Income Tax (15) minus Total Deducted Tax (16)
             let netResult = totalTaxPayable - totalTdsDeducted;
             let textColorClass = netResult < 0 ? 'text-danger' : 'text-primary';
             let displayResultText = netResult < 0 ? Math.abs(netResult).toLocaleString() + ' (Refundable)' : netResult.toLocaleString();
@@ -692,7 +703,7 @@
                         <tr><td class="ps-4">(vi) From Rs. 20,00,001 to Rs. 24,00,000 @25%</td><td class="text-end">Rs. ${Math.round(slab6).toLocaleString()}</td></tr>
                         <tr><td class="ps-4">(vii) Above Rs. 24,00,000 @30%</td><td class="text-end">Rs. ${Math.round(slab7).toLocaleString()}</td></tr>
                         <tr class="table-light"><td><b>Total Income Tax (i to vii)</b></td><td class="text-end"><b>Rs. ${Math.round(totalTaxBeforeRebate).toLocaleString()}</b></td></tr>
-                        <tr><td><b>09-</b> Rebate u/s 87A (Full rebate if Taxable Income ≤ ₹12,00,000)</td><td class="text-end">Rs. ${Math.round(rebate).toLocaleString()}</td></tr>
+                        <tr><td><b>09-</b> Rebate u/s 87A (Max ₹60,000 if Taxable Income ≤ ₹12,00,000)</td><td class="text-end">Rs. ${Math.round(rebate).toLocaleString()}</td></tr>
                         <tr><td><b>10-</b> Tax Payable after Rebate (8-9)</td><td class="text-end">Rs. ${Math.max(0, Math.round(totalTaxBeforeRebate - rebate)).toLocaleString()}</td></tr>
                         <tr><td><b>11-</b> Surcharge, wherever applicable</td><td class="text-end">Rs. NIL</td></tr>
                         <tr><td><b>12-</b> Education & Health Cess @ 4%</td><td class="text-end">Rs. ${cess.toLocaleString()}</td></tr>
@@ -935,7 +946,7 @@
         if (rem > 2400000) slab7 = (rem - 2400000) * 0.30;
 
         let totalTaxBeforeRebate = slab2 + slab3 + slab4 + slab5 + slab6 + slab7;
-        let rebate = (taxableIncome <= 1200000) ? totalTaxBeforeRebate : 0;
+        let rebate = (taxableIncome <= 1200000) ? Math.min(totalTaxBeforeRebate, 60000) : 0;
         let taxAfterRebate = Math.max(0, totalTaxBeforeRebate - rebate);
         let cess = Math.round(taxAfterRebate * 0.04);
         return taxAfterRebate + cess;
