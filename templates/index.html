@@ -195,7 +195,7 @@
     // Reset Form Functionality
     function resetFormData() {
         if(confirm('क्या आप वाकई सभी फॉर्म डेटा को रीसेट (डिफ़ॉल्ट) करना चाहते हैं?')) {
-            taxData = JSON.parse(JSON.stringify(defaultTaxData));
+            taxData = {};
             localStorage.setItem('taxCalculatorData_2026_27', JSON.stringify(taxData));
             showPage('fill-form');
             alert('🔄 फॉर्म डेटा रीसेट कर दिया गया है!');
