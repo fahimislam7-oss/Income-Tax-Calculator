@@ -20,7 +20,7 @@
         .sub-nav-btn { width: 100%; margin-bottom: 8px; text-align: left; font-size: 13px; font-weight: 600; }
         .card-box { background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #1f77b4; }
         .section-title { background-color: #1f77b4; color: white; padding: 10px 15px; border-radius: 5px; font-size: 18px; margin-top: 20px; margin-bottom: 15px; }
-        
+
         /* Statement & Tax Sheet Styling */
         .statement-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1f77b4; padding-bottom: 15px; margin-bottom: 15px; }
         .logo-box { width: 60px; height: 60px; background: #1f77b4; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -30,7 +30,7 @@
         .tax-calc-table { width: 100%; font-size: 12px; border-collapse: collapse; }
         .tax-calc-table td { padding: 5px 8px; border-bottom: 1px dashed #ddd; }
         .top-dev-line { font-size: 11px; color: #666; text-align: center; margin-bottom: 10px; background: #e9ecef; padding: 4px; border-radius: 4px; }
-        
+
         /* Split Header and Signature for Print Layout */
         .print-header-grid { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 6px; }
         .print-signature { margin-top: 25px; float: right; text-align: right; font-size: 12px; line-height: 1.3; }
@@ -85,7 +85,7 @@
 </div>
 
 <script>
-    // Global Comprehensive Data Store with LocalStorage Integration
+    // Global Comprehensive Data Store with LocalStorage Integration (Default Blank for New Form)
     let defaultTaxData = {
         name: "",
         designation: "",
@@ -98,9 +98,10 @@
         state: "",
         district: "",
         hraType: "B-2",
+        hraAmount: 0, // नया वेरिएबल HRA Amount सेव करने के लिए
         hillAllow: 0,
         sghs: 0,
-        payScale: "Level 7 (44900-142400) [Grade Pay: GP 4600]",
+        payScale: "",
         basicMarch: 0,
         incrementMonth: "July",
         incrementAmount: 1600,
@@ -115,6 +116,8 @@
         otherIncome: 0,
         deductionType: "NPS",
         gpfMonthly: 0,
+        gpfChangeMonth: "None",
+        gpfChangedMonthly: 0,
         deductionStartMonth: "March",
         incomeTaxMonthly: 0,
         taxChangeMonth: "None",
@@ -157,13 +160,14 @@
         taxData.state = document.getElementById('empState').value;
         taxData.district = document.getElementById('empDistrict').value;
         taxData.hraType = document.getElementById('empHraType').value;
+        taxData.hraAmount = parseFloat(document.getElementById('empHraAmount').value) || 0; // HRA Amount सेव करना
         taxData.hillAllow = parseFloat(document.getElementById('empHill').value) || 0;
         taxData.sghs = parseFloat(document.getElementById('empSghs').value) || 0;
         taxData.payScale = document.getElementById('empPayScale').value;
-        taxData.basicMarch = parseFloat(document.getElementById('empBasicMarch').value) || 52000;
+        taxData.basicMarch = parseFloat(document.getElementById('empBasicMarch').value) || 0;
         taxData.incrementMonth = document.getElementById('empIncMonth').value;
-        taxData.gis = parseFloat(document.getElementById('empGis').value) || 200;
-        taxData.daRate = parseFloat(document.getElementById('empDaRate').value) || 50;
+        taxData.gis = parseFloat(document.getElementById('empGis').value) || 0;
+        taxData.daRate = parseFloat(document.getElementById('empDaRate').value) || 0;
         taxData.daEffectiveMonth = document.getElementById('empDaEffMonth').value;
         taxData.daRateNew = parseFloat(document.getElementById('empDaRateNew').value) || taxData.daRate;
         taxData.otherAllow = parseFloat(document.getElementById('empOtherAllow').value) || 0;
@@ -173,6 +177,8 @@
         taxData.otherIncome = parseFloat(document.getElementById('empOtherIncome').value) || 0;
         taxData.deductionType = document.getElementById('empDedType').value;
         taxData.gpfMonthly = parseFloat(document.getElementById('empGpfMonthly').value) || 0;
+        taxData.gpfChangeMonth = document.getElementById('empGpfChangeMonth') ? document.getElementById('empGpfChangeMonth').value : 'None';
+        taxData.gpfChangedMonthly = document.getElementById('empGpfChangedMonthly') ? parseFloat(document.getElementById('empGpfChangedMonthly').value) || 0 : 0;
         taxData.deductionStartMonth = document.getElementById('empDedStartMonth').value;
         taxData.incomeTaxMonthly = parseFloat(document.getElementById('empTaxMonthly').value) || 0;
         taxData.taxChangeMonth = document.getElementById('empTaxChangeMonth').value;
@@ -194,11 +200,11 @@
 
     // Reset Form Functionality
     function resetFormData() {
-        if(confirm('क्या आप वाकई सभी फॉर्म डेटा को रीसेट (डिफ़ॉल्ट) करना चाहते हैं?')) {
-            taxData = {};
+        if(confirm('क्या आप वाकई सभी फॉर्म डेटा को रीसेट (खाली) करना चाहते हैं?')) {
+            taxData = JSON.parse(JSON.stringify(defaultTaxData));
             localStorage.setItem('taxCalculatorData_2026_27', JSON.stringify(taxData));
             showPage('fill-form');
-            alert('🔄 फॉर्म डेटा रीसेट कर दिया गया है!');
+            alert('🔄 फॉर्म डेटा खाली कर दिया गया है!');
         }
     }
 
@@ -209,10 +215,62 @@
         return monthsOrder.indexOf(mName);
     }
 
+    // Auto Calculate HRA Amount when Category or PayScale changes
+    function autoCalculateHRA() {
+        let scale = document.getElementById('empPayScale').value || "";
+        let gp = 4600; // default
+        if(scale.includes("GP 1800")) gp = 1800;
+        else if(scale.includes("GP 1900")) gp = 1900;
+        else if(scale.includes("GP 2000")) gp = 2000;
+        else if(scale.includes("GP 2400")) gp = 2400;
+        else if(scale.includes("GP 2800")) gp = 2800;
+        else if(scale.includes("GP 4200")) gp = 4200;
+        else if(scale.includes("GP 4600")) gp = 4600;
+        else if(scale.includes("GP 4800")) gp = 4800;
+        else if(scale.includes("GP 5400")) gp = 5400;
+        else if(scale.includes("GP 6600")) gp = 6600;
+        else if(scale.includes("GP 7600")) gp = 7600;
+        else if(scale.includes("GP 8700")) gp = 8700;
+        else if(scale.includes("GP 8900")) gp = 8900;
+        else if(scale.includes("GP 10000")) gp = 10000;
+
+        let category = document.getElementById('empHraType').value;
+        let hraAmt = 0;
+        if(category === "Not Received") hraAmt = 0;
+        else if(category === "B-2") {
+            if(gp <= 2800) hraAmt = 2400;
+            else if(gp <= 4800) hraAmt = 3600;
+            else hraAmt = 5400;
+        } else if(category === "C") {
+            if(gp <= 2800) hraAmt = 1600;
+            else if(gp <= 4800) hraAmt = 2400;
+            else hraAmt = 3600;
+        } else if(category === "Rural") {
+            if(gp <= 2800) hraAmt = 1000;
+            else if(gp <= 4800) hraAmt = 1500;
+            else hraAmt = 2000;
+        }
+        
+        let hraInput = document.getElementById('empHraAmount');
+        if(hraInput) {
+            hraInput.value = hraAmt;
+        }
+    }
+
+    function toggleGpfExtraFields() {
+        let dedType = document.getElementById('empDedType').value;
+        let container = document.getElementById('gpfExtraFields');
+        if(dedType === 'GPF') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
     function showPage(pageId, subTab = '') {
         if(pageId !== 'form-16' && pageId !== 'salary-statement') updateActiveButton(pageId);
         const contentDiv = document.getElementById('page-content');
-        
+
         const devLineHTML = `<div class="top-dev-line">Tax Calculator Developed by: <b>Fahim Islam (A.T.) Math, Ghss Timlagoonth, Pati (Champawat)</b> | Mo. 7467860304</div>`;
         const signatureBlock = `
             <div class="clearfix"></div>
@@ -242,7 +300,7 @@
                 </div>`;
         } 
         else if(pageId === 'fill-form') {
-            let payScaleOptions = '';
+            let payScaleOptions = '<option value="">-- Select Pay Scale/Grade Pay --</option>';
             let levels = [
                 {lvl: 1, range: "18000-56900", gp: "GP 1800"}, {lvl: 2, range: "19900-63200", gp: "GP 1900"}, 
                 {lvl: 3, range: "21700-69100", gp: "GP 2000"}, {lvl: 4, range: "25500-81100", gp: "GP 2400"}, 
@@ -267,26 +325,32 @@
             });
 
             let taxChangeMonthOptions = `<option value="None" ${taxData.taxChangeMonth === 'None' ? 'selected' : ''}>None (No change)</option>`;
+            let gpfChangeMonthOptions = `<option value="None" ${taxData.gpfChangeMonth === 'None' ? 'selected' : ''}>None (No change)</option>`;
             monthsList.forEach(m => {
-                let sel = (taxData.taxChangeMonth === m) ? 'selected' : '';
-                taxChangeMonthOptions += `<option value="${m}" ${sel}>${m}</option>`;
+                let selTax = (taxData.taxChangeMonth === m) ? 'selected' : '';
+                taxChangeMonthOptions += `<option value="${m}" ${selTax}>${m}</option>`;
+
+                let selGpf = (taxData.gpfChangeMonth === m) ? 'selected' : '';
+                gpfChangeMonthOptions += `<option value="${m}" ${selGpf}>${m}</option>`;
             });
+
+            let isGpfSelected = taxData.deductionType === 'GPF';
 
             contentDiv.innerHTML = `
                 <div class="card-box">
                     <h3 class="text-primary fw-bold mb-3">📝 Comprehensive Income Tax Details Form (FY 2026-27)</h3>
-                    <p class="text-muted">कृपया नीचे दिए गए सभी कॉलम सावधानीपूर्वक भरें।</p>
+                    <p class="text-muted">कृपया नीचे दिए गए सभी कॉलम सावधानीपूर्वक भरें। (सभी फ़ील्ड नए फॉर्म के लिए खाली हैं)</p>
                     <hr>
                     <form onsubmit="saveFormData(event)">
                         <div class="section-title">1. व्यक्तिगत एवं कार्यालय विवरण (Personal & Office Details)</div>
                         <div class="row g-3">
-                            <div class="col-md-4"><label class="form-label fw-bold">Name of Employee</label><input type="text" id="empName" class="form-control" value="${taxData.name}" required></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">Employee's Designation</label><input type="text" id="empDesig" class="form-control" value="${taxData.designation}" required></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">School/College/Institute/Office Name</label><input type="text" id="empSchool" class="form-control" value="${taxData.school}" required></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">Whatsapp No.</label><input type="text" id="empWhatsapp" class="form-control" value="${taxData.whatsapp}"></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">PAN of Employee</label><input type="text" id="empPan" class="form-control" value="${taxData.pan}" required></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">Treasury Code</label><input type="text" id="empTreasury" class="form-control" value="${taxData.treasuryCode}"></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">GPF/NPS Number</label><input type="text" id="empGpfNps" class="form-control" value="${taxData.gpfNpsNo}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Name of Employee</label><input type="text" id="empName" class="form-control" value="${taxData.name}" placeholder="अपना पूरा नाम लिखें"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Employee's Designation</label><input type="text" id="empDesig" class="form-control" value="${taxData.designation}" placeholder="पदनाम (जैसे- L.T. Math)"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">School/College/Institute/Office Name</label><input type="text" id="empSchool" class="form-control" value="${taxData.school}" placeholder="विद्यालय/कार्यालय का नाम"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Whatsapp No.</label><input type="text" id="empWhatsapp" class="form-control" value="${taxData.whatsapp}" placeholder="मोबाइल नंबर"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">PAN of Employee</label><input type="text" id="empPan" class="form-control" value="${taxData.pan}" placeholder="PAN No."></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Treasury Code</label><input type="text" id="empTreasury" class="form-control" value="${taxData.treasuryCode}" placeholder="कोषागार कोड"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">GPF/NPS Number</label><input type="text" id="empGpfNps" class="form-control" value="${taxData.gpfNpsNo}" placeholder="GPF/NPS No."></div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Gender</label>
                                 <select id="empGender" class="form-control">
@@ -295,28 +359,34 @@
                                     <option value="Other" ${taxData.gender === 'Other' ? 'selected' : ''}>Other</option>
                                 </select>
                             </div>
-                            <div class="col-md-4"><label class="form-label fw-bold">State Name</label><input type="text" id="empState" class="form-control" value="${taxData.state}"></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">District Name</label><input type="text" id="empDistrict" class="form-control" value="${taxData.district}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">State Name</label><input type="text" id="empState" class="form-control" value="${taxData.state}" placeholder="राज्य"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">District Name</label><input type="text" id="empDistrict" class="form-control" value="${taxData.district}" placeholder="जनपद"></div>
                         </div>
 
                         <div class="section-title">2. वेतन, भत्ते एवं डीए (Pay Matrix & DA Effective Rate Options)</div>
                         <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Pay Scale (Level 1 to 16 with Grade Pay)</label>
+                                <select id="empPayScale" class="form-control" onchange="autoCalculateHRA()">${payScaleOptions}</select>
+                            </div>
+                            <div class="col-md-6"><label class="form-label fw-bold">Basic Pay as on March</label><input type="number" id="empBasicMarch" class="form-control" value="${taxData.basicMarch}" placeholder="मार्च का मूल वेतन"></div>
+                            
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">HRA Category</label>
-                                <select id="empHraType" class="form-control">
+                                <label class="form-label fw-bold">HRA Category (जिला/क्षेत्र श्रेणी)</label>
+                                <select id="empHraType" class="form-control" onchange="autoCalculateHRA()">
                                     <option value="B-2" ${taxData.hraType === 'B-2' ? 'selected' : ''}>B-2</option>
                                     <option value="C" ${taxData.hraType === 'C' ? 'selected' : ''}>C</option>
                                     <option value="Rural" ${taxData.hraType === 'Rural' ? 'selected' : ''}>Rural</option>
                                     <option value="Not Received" ${taxData.hraType === 'Not Received' ? 'selected' : ''}>HRA Not Received</option>
                                 </select>
                             </div>
-                            <div class="col-md-4"><label class="form-label fw-bold">Hill Allowance (पर्वतीय भत्ता)</label><input type="number" id="empHill" class="form-control" value="${taxData.hillAllow}"></div>
-                            <div class="col-md-4"><label class="form-label fw-bold">SGHS (स्वास्थ्य बीमा)</label><input type="number" id="empSghs" class="form-control" value="${taxData.sghs}"></div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Pay Scale (Level 1 to 16 with Grade Pay)</label>
-                                <select id="empPayScale" class="form-control">${payScaleOptions}</select>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-success">Monthly HRA Amount (₹)</label>
+                                <input type="number" id="empHraAmount" class="form-control border-success" value="${taxData.hraAmount !== undefined ? taxData.hraAmount : ''}" placeholder="यहाँ HRA डालें या श्रेणी चुनें">
+                                <small class="text-muted">स्वतः गणना या अपनी इच्छानुसार मैन्युअल बदलाव करें।</small>
                             </div>
-                            <div class="col-md-6"><label class="form-label fw-bold">Basic Pay as on March</label><input type="number" id="empBasicMarch" class="form-control" value="${taxData.basicMarch}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">Hill Allowance (पर्वतीय भत्ता)</label><input type="number" id="empHill" class="form-control" value="${taxData.hillAllow}"></div>
+                            
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Month Increment</label>
                                 <select id="empIncMonth" class="form-control">
@@ -324,6 +394,7 @@
                                     <option value="July" ${taxData.incrementMonth === 'July' ? 'selected' : ''}>July</option>
                                 </select>
                             </div>
+                            <div class="col-md-4"><label class="form-label fw-bold">SGHS (स्वास्थ्य बीमा)</label><input type="number" id="empSghs" class="form-control" value="${taxData.sghs}"></div>
                             <div class="col-md-4"><label class="form-label fw-bold">GIS</label><input type="number" id="empGis" class="form-control" value="${taxData.gis}"></div>
                             <div class="col-md-4"><label class="form-label fw-bold">Initial DA Rate (%) (शुरुआती)</label><input type="number" id="empDaRate" class="form-control" value="${taxData.daRate}"></div>
                             <div class="col-md-4">
@@ -342,12 +413,28 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Type of Deduction (GPF or NPS)</label>
-                                <select id="empDedType" class="form-control">
+                                <select id="empDedType" class="form-control" onchange="toggleGpfExtraFields()">
                                     <option value="NPS" ${taxData.deductionType === 'NPS' ? 'selected' : ''}>NPS (10% Employee Contribution)</option>
                                     <option value="GPF" ${taxData.deductionType === 'GPF' ? 'selected' : ''}>GPF (Fixed Monthly Amount)</option>
                                 </select>
                             </div>
-                            <div class="col-md-4"><label class="form-label fw-bold">GPF Monthly Deduction Amount (यदि GPF चुनें)</label><input type="number" id="empGpfMonthly" class="form-control" value="${taxData.gpfMonthly}"></div>
+                            <div class="col-md-4"><label class="form-label fw-bold">GPF / Initial Monthly Deduction Amount</label><input type="number" id="empGpfMonthly" class="form-control" value="${taxData.gpfMonthly}"></div>
+                            
+                            <!-- Dynamic GPF Change Extra Fields -->
+                            <div class="col-md-12" id="gpfExtraFields" style="display: ${isGpfSelected ? 'block' : 'none'}; background: #e9ecef; padding: 15px; border-radius: 8px;">
+                                <h6 class="text-primary fw-bold">📌 GPF Manual Modification Settings (जब GPF बदला हो):</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">किस महीने से GPF बदला (GPF Change Month):</label>
+                                        <select id="empGpfChangeMonth" class="form-control">${gpfChangeMonthOptions}</select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">बदला हुआ नया मैन्युअल GPF अमाउंट (Changed Monthly GPF):</label>
+                                        <input type="number" id="empGpfChangedMonthly" class="form-control" value="${taxData.gpfChangedMonthly}" placeholder="नया मासिक GPF अमाउंट">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col-md-4"><label class="form-label fw-bold">Deduction Start Month</label><input type="text" id="empDedStartMonth" class="form-control" value="${taxData.deductionStartMonth}"></div>
                             <div class="col-md-4"><label class="form-label fw-bold">Initial Income Tax TDS per Month (March-Jan)</label><input type="number" id="empTaxMonthly" class="form-control" value="${taxData.incomeTaxMonthly}"></div>
                             <div class="col-md-4">
@@ -376,7 +463,7 @@
 
                         <div class="mt-4 text-center">
                             <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold shadow me-2">💾 Save & Generate Salary Statement</button>
-                            <button type="button" class="btn btn-danger btn-lg px-4 fw-bold shadow" onclick="resetFormData()">🔄 Reset Form</button>
+                            <button type="button" class="btn btn-danger btn-lg px-4 fw-bold shadow" onclick="resetFormData()">🔄 Reset Form (Clear All)</button>
                         </div>
                     </form>
                 </div>`;
@@ -392,6 +479,7 @@
 
             let netTaxRequired = (activeSub === 'new') ? calculateNewRegimeTaxPayable() : calculateOldRegimeTaxPayable();
             let changeMonthIdx = taxData.taxChangeMonth !== 'None' ? getMonthIndex(taxData.taxChangeMonth) : 999;
+            let gpfChangeMonthIdx = taxData.gpfChangeMonth !== 'None' ? getMonthIndex(taxData.gpfChangeMonth) : 999;
 
             let tdsPaidMarchToJan = 0;
             for(let i=0; i<11; i++) {
@@ -403,7 +491,8 @@
             let febTdsAmount = Math.max(0, netTaxRequired - tdsPaidMarchToJan);
 
             let tableRowsHTML = "";
-            let tBasic = 0, tDa = 0, tHra = 3600*12, tHill = taxData.hillAllow*12, tSpec = taxData.otherAllow*12, tPay = 0;
+            let tBasic = 0, tDa = 0, calculatedHraVal = taxData.hraAmount || 0; // इस्तेमाल किया गया नया वेरिएबल
+            let tHra = calculatedHraVal * 12, tHill = taxData.hillAllow*12, tSpec = taxData.otherAllow*12, tPay = 0;
             let tDedTypeAmount = 0, tNpsGovt = 0, tGis = taxData.gis*12, tIt = 0, tSghs = taxData.sghs*12, tDed = 0, tNet = 0;
 
             months.forEach((mName, index) => {
@@ -420,7 +509,7 @@
                 let activeDaRate = (currentMonthIdx >= effMonthIdx) ? taxData.daRateNew : taxData.daRate;
 
                 let da = Math.round(currentBasic * (activeDaRate / 100));
-                let hra = 3600;
+                let hra = calculatedHraVal;
                 let hill = taxData.hillAllow;
                 let spec = taxData.otherAllow;
                 let daArr = (mName === "June-26") ? taxData.daArrears : 0;
@@ -440,7 +529,12 @@
                     deductionColVal = Math.round((currentBasic + da) * 0.10);
                     npsGovt = Math.round((currentBasic + da) * 0.14);
                 } else {
-                    deductionColVal = taxData.gpfMonthly;
+                    // GPF Deduction with manual change support
+                    if(taxData.gpfChangeMonth !== 'None' && currentMonthIdx >= gpfChangeMonthIdx) {
+                        deductionColVal = taxData.gpfChangedMonthly;
+                    } else {
+                        deductionColVal = taxData.gpfMonthly;
+                    }
                     npsGovt = 0;
                 }
 
@@ -628,14 +722,13 @@
             if (rem > 2400000) slab7 = (rem - 2400000) * 0.30;
 
             let totalTaxBeforeRebate = slab2 + slab3 + slab4 + slab5 + slab6 + slab7;
-            // Updated Rebate u/s 87A limit to 60000 (if taxable income <= 1200000)
             let rebate = (taxableIncome <= 1200000) ? Math.min(totalTaxBeforeRebate, 60000) : 0;
             let taxAfterRebate = Math.max(0, totalTaxBeforeRebate - rebate);
             let cess = Math.round(taxAfterRebate * 0.04);
             let totalTaxPayable = taxAfterRebate + cess;
-            
+
             let totalTdsDeducted = calculateTotalTdsDeducted('new');
-            
+
             let netResult = totalTaxPayable - totalTdsDeducted;
             let textColorClass = netResult < 0 ? 'text-danger' : 'text-primary';
             let displayResultText = netResult < 0 ? Math.abs(netResult).toLocaleString() + ' (Refundable)' : netResult.toLocaleString();
@@ -748,7 +841,7 @@
             let cessOld = Math.round(taxAfterRebateOld * 0.04);
             let totalTaxPayableOld = taxAfterRebateOld + cessOld;
             let totalTdsDeductedOld = calculateTotalTdsDeducted('old');
-            
+
             let netResultOld = totalTaxPayableOld - totalTdsDeductedOld;
             let textColorClassOld = netResultOld < 0 ? 'text-danger' : 'text-primary';
             let displayResultTextOld = netResultOld < 0 ? Math.abs(netResultOld).toLocaleString() + ' (Refundable)' : netResultOld.toLocaleString();
@@ -865,6 +958,7 @@
         let incAmt = 1600;
         let incMonth = taxData.incrementMonth;
         let totalGross = 0;
+        let calculatedHraVal = taxData.hraAmount || 0; // इस्तेमाल किया गया नया वेरिएबल
 
         months.forEach((mName, index) => {
             let currentBasic = baseBasic;
@@ -881,7 +975,7 @@
 
             let da = Math.round(currentBasic * (activeDaRate / 100));
             let bonusVal = (mName === "October-26") ? taxData.bonus : 0;
-            let totPay = currentBasic + da + 3600 + taxData.hillAllow + taxData.otherAllow + bonusVal;
+            let totPay = currentBasic + da + calculatedHraVal + taxData.hillAllow + taxData.otherAllow + bonusVal;
             if(mName === "June-26") totPay += taxData.daArrears;
             totalGross += totPay;
         });
